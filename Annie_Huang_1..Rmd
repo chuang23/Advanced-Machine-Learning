@@ -1,0 +1,218 @@
+---
+title: "ASSIGNMENT 1"
+author: "Annie"
+date: "2/8/2020"
+output: html_document
+---
+
+```{r}
+library(keras)
+# Importing IMDB movie reviews dataset and we only keep the top 10,000 most frequently occurring words in the training data.
+imdb <- dataset_imdb(num_words = 10000)
+c(c(train_data, train_labels), c(test_data, test_labels)) %<-% imdb
+
+# Converting data to binary data
+vectorize_sequences <- function(sequences, dimention = 10000) { 
+    # Create an all-zero matrix of shape (len(sequences), dimension)
+  results <- matrix(0, nrow = length(sequences), ncol= dimention)
+  for(i in 1:length(sequences))
+        # Sets specific indices of results[i] to 1s
+  results[i, sequences[[i]]] <- 1
+  results
+}
+
+x_train <- vectorize_sequences(train_data)  # vectorized training data
+x_test <- vectorize_sequences(test_data)    # vectorized test data
+# vectorizing the labels
+y_train <- as.numeric(train_labels)
+y_test <- as.numeric(test_labels)
+# structure of the vectorized samples
+str(x_train[1,])
+
+## Setting apart 10,000 samples from the original training data for validation
+sample_size = floor(0.6*nrow(x_train))
+Train_indices = sample(seq_len(nrow(x_train)),size = sample_size)
+partial_x_train =x_train[Train_indices,]
+x_val =x_train[-Train_indices,]
+
+partial_y_train <- y_train[Train_indices]
+y_val <- y_train[-Train_indices]
+```
+
+# using one hidden layer
+*** 32 units
+```{r}
+# Building our network 
+# Using 1 hidden layer with 32 units, tanh activation function, batch size 512, 20 epoch.
+model <- keras_model_sequential() %>% 
+  layer_dense(units = 32, activation = "tanh", input_shape = c(10000)) %>%
+  layer_dense(units = 1, activation = "sigmoid")
+model %>% compile(
+  optimizer = "rmsprop",
+  loss = "mse",
+  metrics = c("accuracy"))
+history_1 <- model%>% fit(
+  partial_x_train,
+  partial_y_train,
+  epochs = 20,
+  batch_size = 512,
+  validation_data = list(x_val, y_val))
+# Let's train a new network from scratch for 3 epochs and then evaluate it on the test data.
+model2 <- keras_model_sequential() %>% 
+  layer_dense(units = 32, activation = "tanh", input_shape = c(10000)) %>%
+  layer_dense(units = 1, activation = "sigmoid")
+model2 %>% compile(
+  optimizer = "rmsprop",
+  loss = "mse",
+  metrics = c("accuracy"))
+model2 %>% fit(x_train, y_train, epochs = 3, batch_size = 512)
+results <- model2 %>% evaluate(x_test, y_test)
+
+```
+
+###  another: One Hidden Layer
+*** 64 Units
+```{r, echo=TRUE, results='hide'}
+# Using 1 hidden layer with 64 units, tanh activation function, batch size 512, 20 epoch.
+model3 <- keras_model_sequential() %>% 
+  layer_dense(units = 64, activation = "tanh", input_shape = c(10000)) %>%
+  layer_dense(units = 1, activation = "sigmoid")
+model3 %>% compile(
+  optimizer = "rmsprop",
+  loss = "mse",
+  metrics = c("accuracy"))
+history_2 <- model2 %>% fit(
+  partial_x_train,
+  partial_y_train,
+  epochs = 20,
+  batch_size = 512,
+  validation_data = list(x_val, y_val))
+
+# Let's train a new network from scratch for 3 epochs and then evaluate it on the test data.
+model4 <- keras_model_sequential() %>% 
+  layer_dense(units = 64, activation = "tanh", input_shape = c(10000)) %>%
+  layer_dense(units = 1, activation = "sigmoid")
+
+model4 %>% compile(
+  optimizer = "rmsprop",
+  loss = "mse",
+  metrics = c("accuracy"))
+
+model4 %>% fit(x_train, y_train, epochs = 3, batch_size = 512)
+results <- model4 %>% evaluate(x_test, y_test)
+```
+
+# Using 3 hidden layers with 32, 32, 32 units, tanh activation function, batch size 512, 20 epoch.
+
+```{r}
+model5 <- keras_model_sequential() %>% 
+  layer_dense(units = 32, activation = "tanh", input_shape = c(10000)) %>%
+  layer_dense(units = 32, activation = "tanh") %>%
+  layer_dense(units = 32, activation = "tanh") %>%
+  layer_dense(units = 1, activation = "sigmoid")
+model5 %>% compile(
+  optimizer = "rmsprop",
+  loss = "mse",
+  metrics = c("accuracy"))
+history_3 <- model2 %>% fit(
+  partial_x_train,
+  partial_y_train,
+  epochs = 20,
+  batch_size = 512,
+  validation_data = list(x_val, y_val))
+
+# Let's train a new network from scratch for 4 epochs and then evaluate it on the test data.
+model6 <- keras_model_sequential() %>% 
+  layer_dense(units = 32, activation = "tanh", input_shape = c(10000)) %>%
+  layer_dense(units = 32, activation = "tanh") %>%
+  layer_dense(units = 32, activation = "tanh") %>%
+  layer_dense(units = 1, activation = "sigmoid")
+
+model6 %>% compile(
+  optimizer = "rmsprop",
+  loss = "mse",
+  metrics = c("accuracy"))
+
+model6 %>% fit(x_train, y_train, epochs = 4, batch_size = 512)
+results <- model6 %>% evaluate(x_test, y_test)
+
+```
+
+*** 64, 64, 64 Units
+```{r}
+# Building our network 
+# Using 1 hidden layer with 64 units, tanh activation function, batch size 512, 20 epoch.
+model7 <- keras_model_sequential() %>% 
+  layer_dense(units = 64, activation = "tanh", input_shape = c(10000)) %>%
+  layer_dense(units = 64, activation = "tanh") %>%
+  layer_dense(units = 64, activation = "tanh") %>%
+  layer_dense(units = 1, activation = "sigmoid")
+model7 %>% compile(
+  optimizer = "rmsprop",
+  loss = "mse",
+  metrics = c("accuracy"))
+history_3 <- model3%>% fit(
+  partial_x_train,
+  partial_y_train,
+  epochs = 20,
+  batch_size = 512,
+  validation_data = list(x_val, y_val))
+
+# Let's train a new network from scratch for 2 epochs and then evaluate it on the test data.
+model8 <- keras_model_sequential() %>% 
+  layer_dense(units = 64, activation = "tanh", input_shape = c(10000)) %>%
+  layer_dense(units = 64, activation = "tanh") %>%
+  layer_dense(units = 64, activation = "tanh") %>%
+  layer_dense(units = 1, activation = "sigmoid")
+
+model8 %>% compile(
+  optimizer = "rmsprop",
+  loss = "mse",
+  metrics = c("accuracy"))
+
+model8 %>% fit(x_train, y_train, epochs = 2, batch_size = 512)
+results <- model8 %>% evaluate(x_test, y_test)
+
+```
+
+# using dropout
+
+```{r, echo=TRUE, results='hide'}
+# Using 3 hidden layers with 64, 32, 16 units, tanh activation function, batch size 512, 20 epoch.
+model9 <- keras_model_sequential() %>% 
+  layer_dense(units = 64, activation = "tanh",input_shape = c(10000)) %>%
+  layer_dropout(rate = 0.5) %>%
+  layer_dense(units = 32, activation = "tanh") %>%
+  layer_dropout(rate = 0.5) %>%
+  layer_dense(units = 16, activation = "tanh") %>%
+  layer_dropout(rate = 0.5) %>%
+  layer_dense(units = 1, activation = "sigmoid")
+model9%>% compile(
+  optimizer = "rmsprop",
+  loss = "mse",
+  metrics = c("accuracy"))
+history4 <- model9 %>% fit(
+  partial_x_train,
+  partial_y_train,
+  epochs = 20,
+  batch_size = 512,
+  validation_data = list(x_val, y_val))
+
+# Let's train a new network from scratch for 3 epochs and then evaluate it on the test data.
+model10 <- keras_model_sequential() %>% 
+  layer_dense(units = 64, activation = "tanh",input_shape = c(10000)) %>%
+  layer_dropout(rate = 0.5) %>%
+  layer_dense(units = 32, activation = "tanh") %>%
+  layer_dropout(rate = 0.5) %>%
+  layer_dense(units = 16, activation = "tanh") %>%
+  layer_dropout(rate = 0.5) %>%
+  layer_dense(units = 1, activation = "sigmoid")
+
+model10 %>% compile(
+  optimizer = "rmsprop",
+  loss = "mse",
+  metrics = c("accuracy"))
+
+model10 %>% fit(x_train, y_train, epochs = 3, batch_size = 512)
+results <- model10 %>% evaluate(x_test, y_test)
+```
